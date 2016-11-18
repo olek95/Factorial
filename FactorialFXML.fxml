@@ -26,7 +26,7 @@
          <bottom>
             <Pane prefHeight="74.0" prefWidth="600.0" BorderPane.alignment="CENTER">
                <children>
-                  <Button fx:id="startButton" layoutX="112.0" layoutY="25.0" mnemonicParsing="false" text="Uruchom" />
+                  <Button fx:id="startButton" layoutX="112.0" layoutY="25.0" mnemonicParsing="false" onAction="#startAction" text="Uruchom" />
                   <Button fx:id="stopButton" layoutX="274.0" layoutY="25.0" mnemonicParsing="false" text="Zatrzymaj" />
                   <Button fx:id="exitButton" layoutX="462.0" layoutY="25.0" mnemonicParsing="false" text="Wyjdź" />
                </children>
