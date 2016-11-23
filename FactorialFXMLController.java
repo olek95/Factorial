@@ -8,9 +8,23 @@ import java.util.logging.Logger;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 
+/**
+ * Klasa <code>FactorialFXMLController</code> reprezentuje sterowanie programu 
+ * porównującego dwa sposoby obliczania silnii - rekurencyjnie oraz iteracyjnie. 
+ * Program porównuje ich wyniki oraz czasy wykonań mierzone w sekundach.
+ * Każdy sposób oblicza wartość silnii w osobnym wątku. Pogram posiada też możliwość 
+ * przerwania obliczeń w przypadku gdy wykonywane są zbyt długo. W tym celu wątki 
+ * obiczające zostały celowo opóźnione, aby dać czas na kliknięcie przycisku Zatrzymaj,
+ * gdyz algorytmy te wykonywały się zbyt szybko. Program zabezpiecza podanie 
+ * innej wartości niż liczba całkowita oraz dla rekursji przed podaniem większej 
+ * liczby niż 10000, aby nie doszło do przepełnienia stosu. 
+ * @author AleksanderSklorz
+ */
 public class FactorialFXMLController implements Initializable {
     private Thread iterationThread, recursionThread;
     @FXML
@@ -23,42 +37,47 @@ public class FactorialFXMLController implements Initializable {
         iterationTimeTextField.setText("");
         recursionTextField.setText("");
         recursionTimeTextField.setText("");
-        startButton.setDisable(true);
-        stopButton.setDisable(false);
-        iterationThread = new Thread(new Runnable() {
-            public void run(){
-                long before = System.currentTimeMillis();
-                BigInteger number = new BigInteger(factorialTextField.getText());
-                try{
-                    iterationTextField.setText(factorialIteratively(number, this).toString());
-                    iterationTimeTextField.setText(String.valueOf((double)(System.currentTimeMillis() - before)/1000) + " s");
-                    if(recursionThread.getState().equals(Thread.State.TERMINATED)){
+        if(factorialTextField.getText().matches("[0-9]+")){
+            startButton.setDisable(true);
+            stopButton.setDisable(false);
+            iterationThread = new Thread(new Runnable() {
+                public void run(){
+                    long before = System.currentTimeMillis();
+                    BigInteger number = new BigInteger(factorialTextField.getText());
+                    try{
+                        iterationTextField.setText(factorialIteratively(number, this).toString());
+                        iterationTimeTextField.setText(String.valueOf((double)(System.currentTimeMillis() - before)/1000) + " s");
                         startButton.setDisable(false);
                         stopButton.setDisable(true);
+                    }catch(InterruptedException e){
+                        Logger.getLogger(FactorialFXMLController.class.getName()).log(Level.SEVERE, null, e);
                     }
-                }catch(InterruptedException e){
-                    Logger.getLogger(FactorialFXMLController.class.getName()).log(Level.SEVERE, null, e);
                 }
-            }
-        });
-        recursionThread = new Thread(new Runnable() {
-            public void run(){
-                long before = System.currentTimeMillis();
-                BigInteger number = new BigInteger(factorialTextField.getText());
-                try{
-                    recursionTextField.setText(factorialRecursively(number, this).toString());
-                    recursionTimeTextField.setText(String.valueOf((double)(System.currentTimeMillis() - before)/1000) + " s");
-                    if(iterationThread.getState().equals(Thread.State.TERMINATED)){
-                        startButton.setDisable(false);
-                        stopButton.setDisable(true);
-                    }
-                }catch(InterruptedException e){
-                    Logger.getLogger(FactorialFXMLController.class.getName()).log(Level.SEVERE, null, e);
+            });
+            recursionThread = new Thread(new Runnable() {
+                public void run(){
+                    long before = System.currentTimeMillis();
+                    BigInteger number = new BigInteger(factorialTextField.getText());
+                    if(number.compareTo(new BigInteger("10000")) <= 0){
+                        try{
+                            recursionTextField.setText(factorialRecursively(number, this).toString());
+                            recursionTimeTextField.setText(String.valueOf((double)(System.currentTimeMillis() - before)/1000) + " s");
+                            startButton.setDisable(false);
+                            stopButton.setDisable(true);
+                        }catch(InterruptedException e){
+                            Logger.getLogger(FactorialFXMLController.class.getName()).log(Level.SEVERE, null, e);
+                        }
+                    }else recursionTextField.setText("Za duża liczba");
                 }
-            }
-        });
-        iterationThread.start(); 
-        recursionThread.start();
+            });
+            iterationThread.start(); 
+            recursionThread.start();
+        }else{
+            Alert formatAlert = new Alert(AlertType.INFORMATION);
+            formatAlert.setTitle("Zła liczba");
+            formatAlert.setHeaderText("Podaj poprawny format liczby całkowitej");
+            formatAlert.showAndWait();
+        }
     }
     
     @Override
