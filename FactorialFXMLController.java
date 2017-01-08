@@ -93,20 +93,22 @@ public class FactorialFXMLController implements Initializable {
             System.exit(0);
         });
     }    
-    private BigInteger factorialIteratively(BigInteger number, Runnable r) throws InterruptedException{
+    public static BigInteger factorialIteratively(BigInteger number, Runnable r) throws InterruptedException{
         BigInteger product = BigInteger.ONE;
         for(BigInteger i = BigInteger.ONE; i.compareTo(number) <= 0; i = i.add(BigInteger.ONE)){
             product = product.multiply(i);
-            synchronized(r){
-                r.wait(200);
-            }
+            if(r != null)
+                synchronized(r){
+                    r.wait(200);
+                }
         }
         return product;
     }
-    private BigInteger factorialRecursively(BigInteger number, Runnable r) throws InterruptedException{
-        synchronized(r){
-            r.wait(200);
-        }
+    public static BigInteger factorialRecursively(BigInteger number, Runnable r) throws InterruptedException{
+        if(r != null)
+            synchronized(r){
+                r.wait(200);
+            }
         if(number.equals(BigInteger.ZERO)) return BigInteger.ONE;
         return number.multiply(factorialRecursively(number.subtract(BigInteger.ONE), r));
     }
